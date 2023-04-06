@@ -2,7 +2,7 @@ from flask import Flask, render_template, Response, stream_with_context
 import cv2
 import torch
 from torchvision.transforms import transforms
-
+emotion = "No Emotion detected"
 face_classifier = cv2.CascadeClassifier('harrcascade_frontallface_default.xml')
 classifier = torch.load('model_ft.h5',map_location ='cpu')
 classifier.eval()
@@ -34,18 +34,25 @@ def generate_frames():
 
             # Add a batch dimension to the tensor
             img_tensor = img_tensor.unsqueeze(0)
+            face_detected = False
             for (x,y,w,h) in faces:
+                face_detected = True
                 with torch.no_grad():
                     prediction = classifier(img_tensor)
                     label=emotion_labels[prediction.argmax()]
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            org = (50, 50)
-            font_scale = 1
-            color = (0, 255, 0)
-            thickness = 2
-            if label in ['Angry','Disgust','Fear', 'Sad']:
-                color = (0, 0, 255)
-            cv2.putText(frame, label, org, font, font_scale, color, thickness, cv2.LINE_AA)
+            if face_detected:
+                global emotion
+                emotion = label
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                org = (50, 50)
+                font_scale = 1
+                color = (0, 255, 0)
+                thickness = 2
+                if label in ['Angry','Disgust','Fear', 'Sad']:
+                    color = (0, 0, 255)
+                cv2.putText(frame, label, org, font, font_scale, color, thickness, cv2.LINE_AA)
+            else:
+                emotion = "No emotion detected"
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
@@ -61,14 +68,22 @@ def video_feed():
     return Response(generate_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/text_feed')
+def text_feed():
+    while True:
+        return Response(gen_text(), mimetype='text/plain')
+
+def gen_text():
+    while True:
+        return emotion
 if __name__ == '__main__':
     app.run(debug=True)
 
 
-from flask import Flask, render_template, Response
+""" from flask import Flask, render_template, Response
 import cv2
 import torch
-from torchvision import transforms
+from torchvision import transforms """
 
 """face_classifier = cv2.CascadeClassifier('harrcascade_frontallface_default.xml')
 classifier = torch.load('model_ft.h5', map_location='cpu')

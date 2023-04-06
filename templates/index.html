@@ -2,13 +2,34 @@
 <html>
   <head>
     <title>Webcam Feed</title>
+    <script>
+      function updateText() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/text_feed', true);
+        xhr.onload = function() {
+            if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+                var text = xhr.responseText;
+                var p = document.getElementById('text');
+                p.textContent = text;
+            } else {
+                console.log('Error: ' + xhr.status);
+            }
+              // call the updateText function again after 1 second
+        };
+        xhr.onerror = function() {
+            console.log('Error: ' + xhr.status);
+              // call the updateText function again after 5 seconds in case of error
+        };
+        xhr.send();
+    }
+    
+    setInterval(updateText, 10);  // start the updateText function when the page loads    
+  </script>
   </head>
   <body>
     <h1>Webcam Feed</h1>
     <img src="{{ url_for('video_feed') }}">
-    {% if text %}
-    <p>{{text}}</p>
-    {% endif %}
+    <h1 id="text"></h1>
   </body>
 </html>
 
