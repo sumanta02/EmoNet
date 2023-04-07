@@ -20,6 +20,7 @@ transform = transforms.Compose([
 app = Flask(__name__,  static_folder="static")
 
 def process_image(img_path):
+    emotion="No Face Detected"
     print(img_path)
     frame = cv2.imread(img_path)
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
