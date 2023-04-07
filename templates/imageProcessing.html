@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>EmoNet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <!-- Popper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">    
+    <style>
+      .navbar {
+        background-color: #333;
+      }
+      .nav-link {
+        color: #fff !important;
+      }
+      .nav-link:hover {
+        color: #ccc !important;
+      }
+      .active {
+        background-color: #666;
+      }
+    </style>
+    <script>
+      function updateText() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/text_feed', true);
+        xhr.onload = function() {
+            if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+                var text = xhr.responseText;
+                var p = document.getElementById('text');
+                p.textContent = text;
+            } else {
+                console.log('Error: ' + xhr.status);
+            }
+              // call the updateText function again after 1 second
+        };
+        xhr.onerror = function() {
+            console.log('Error: ' + xhr.status);
+              // call the updateText function again after 5 seconds in case of error
+        };
+        xhr.send();
+    }
+    
+    setInterval(updateText, 100);  // start the updateText function when the page loads    
+  </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand" href={{url_for("index")}}>EmoNet</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href={{url_for("index")}}>Live Emotion Detection</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href={{url_for("image_processing")}}>Photo Sentiment Analysis</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <div class="row">
+          <div class="col-md-6 mx-auto">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title mb-4">Upload an Image</h5>
+                <form action="{{ url_for('result') }}" method="post" enctype="multipart/form-data">
+                  <div class="mb-3">
+                    <input class="form-control" type="file" name="image" id="formFile" onchange="previewImage()" required>
+                  </div>
+                  <div class="mb-3">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn" disabled onclick="cancelUpload()">Clear</button>
+                  </div>
+                
+                <hr>
+                <div>
+                  <h6 class="card-subtitle mb-3 text-muted">Uploaded Image:</h6>
+                  <div class="border p-2 mb-3">
+                    <img src="" alt="" id="preview" class="img-fluid d-none">
+                    <p class="text-center d-none" id="no-image">No image uploaded yet.</p>
+                    <p class="text-center d-none" id="image-name"></p>
+                  </div>
+                  <button type="submit" class="btn btn-primary d-none" id="start-btn" disabled>Start</button>
+                </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+      
+      <!-- Script for previewing uploaded image -->
+      <script>
+        function previewImage() {
+          const preview = document.getElementById('preview');
+          const file = document.querySelector('input[type=file]').files[0];
+          const noImage = document.getElementById('no-image');
+          const imageName = document.getElementById('image-name');
+          const startBtn = document.getElementById('start-btn');
+          const cancelBtn = document.getElementById('cancel-btn');
+      
+          if (file) {
+            noImage.classList.add('d-none');
+            preview.classList.remove('d-none');
+            startBtn.classList.remove('d-none');
+            startBtn.removeAttribute('disabled');
+            cancelBtn.removeAttribute('disabled');
+      
+            imageName.innerText = `File name: ${file.name}`;
+      
+            const reader = new FileReader();
+      
+            reader.addEventListener('load', function() {
+              preview.src = reader.result;
+            }, false);
+      
+            reader.readAsDataURL(file);
+          } else {
+            preview.classList.add('d-none');
+            startBtn.classList.add('d-none');
+            noImage.classList.remove('d-none');
+            imageName.innerText = '';
+            startBtn.setAttribute('disabled', true);
+            cancelBtn.setAttribute('disabled', true);
+          }
+        }
+      
+        function cancelUpload() {
+          const preview = document.getElementById('preview');
+          const noImage = document.getElementById('no-image');
+          const imageName = document.getElementById('image-name');
+          const startBtn = document.getElementById('start-btn');
+          const cancelBtn = document.getElementById('cancel-btn');
+          const fileInput = document.getElementById('formFile');
+      
+          preview.classList.add('d-none');
+          startBtn.classList.add('d-none');
+          noImage.classList.remove('d-none');
+          imageName.innerText = '';
+          startBtn.setAttribute('disabled', true);
+          cancelBtn.setAttribute('disabled', true);
+          fileInput.value = '';
+        }
+      </script>
+      
+  </body>
+</html>
+
+

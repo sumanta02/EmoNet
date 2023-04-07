@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>EmoNet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <!-- Popper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">    
+    <style>
+      .navbar {
+        background-color: #333;
+      }
+      .nav-link {
+        color: #fff !important;
+      }
+      .nav-link:hover {
+        color: #ccc !important;
+      }
+      .active {
+        background-color: #666;
+      }
+    </style>
+    <script>
+      function updateText() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/text_feed', true);
+        xhr.onload = function() {
+            if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+                var text = xhr.responseText;
+                var p = document.getElementById('text');
+                p.textContent = text;
+            } else {
+                console.log('Error: ' + xhr.status);
+            }
+              // call the updateText function again after 1 second
+        };
+        xhr.onerror = function() {
+            console.log('Error: ' + xhr.status);
+              // call the updateText function again after 5 seconds in case of error
+        };
+        xhr.send();
+    }
+    
+    setInterval(updateText, 100);  // start the updateText function when the page loads    
+  </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand" href={{url_for("index")}}>EmoNet</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href={{url_for("index")}}>Live Emotion Detection</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href={{url_for("image_processing")}}>Photo Sentiment Analysis</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container-fluid">
+      <div class="col justify-content-center">
+        <div class="col-md-6 mx-auto py-5">
+          <img src="{{ url_for('video_feed') }}" class="img-fluid w-100">
+        </div>
+        <div class="col-md-6 mx-auto">
+          <div class="card">
+            <div class="card-body">
+              <p id="text">Result:</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+  </body>
+</html>
+
+<!--<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>EmoNet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="toggle-btns mb-3">
+      <button id="live-sentiment-btn" class="btn btn-primary active">Live Sentiment Detection</button>
+      <button id="image-sentiment-btn" class="btn btn-secondary">Image Sentiment Detection</button>
+    </div>
+    <div id="live-sentiment-container">
+      <div class="row">
+        <div class="col-md-8 col-sm-12 image-placeholder">
+          <h1>Webcam Feed</h1>
+          <img id="video" src="{{ url_for('video_feed') }}" class="w-100" alt="Webcam feed">
+          <h1 id="text"></h1>
+        </div>
+        <div class="col-md-4 col-sm-12 sentiment-box">
+          <h2 class="text-center">Sentiment Analysis</h2>
+          <p id="sentiment-text" class="text-center my-3">Analyzing sentiment...</p>
+          <div class="progress mx-auto" style="width: 50%;">
+            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="image-sentiment-container" style="display: none;">
+      <form>
+        <div class="form-group">
+          <label for="image-input">Upload an image:</label>
+          <input type="file" id="image-input" name="image-input" accept="image/*" class="form-control-file">
+          <div class="image-preview-container my-3">
+            <img id="image-preview" src="" alt="Image preview" class="w-100">
+          </div>
+          <button type="button" id="start-button" class="btn btn-primary mx-auto d-block my-3">Start</button>
+        </div>
+        <div class="sentiment-box">
+          <h2 class="text-center">Sentiment Analysis</h2>
+          <p id="image-sentiment-text" class="text-center my-3">Analyzing sentiment...</p>
+          <div class="progress mx-auto" style="width: 50%;">
+            <div id="image-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>-->
+
+
