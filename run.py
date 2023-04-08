@@ -20,7 +20,6 @@ transform = transforms.Compose([
 app = Flask(__name__,  static_folder="static")
 
 def process_image(img_path):
-    emotion="No Face Detected"
     print(img_path)
     frame = cv2.imread(img_path)
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
@@ -32,6 +31,7 @@ def process_image(img_path):
     # Add a batch dimension to the tensor
     img_tensor = img_tensor.unsqueeze(0)
     face_detected = False
+    emotion = "No Face detected"
     for (x,y,w,h) in faces:
         face_detected = True
         with torch.no_grad():
@@ -100,9 +100,9 @@ def result():
         file = request.files['image']
         if file:
             filename = file.filename
-            file.save("static/" + os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join("static", os.path.join(app.config['UPLOAD_FOLDER'], filename)))
             imgPath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            emotion = process_image("static/" + imgPath)
+            emotion = process_image(os.path.join("static", imgPath))
             
     return render_template('result.html', image_path=url_for("static", filename=imgPath), text=emotion)
 
