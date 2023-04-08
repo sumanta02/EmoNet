@@ -28,29 +28,6 @@
         background-color: #666;
       }
     </style>
-    <script>
-      function updateText() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/text_feed', true);
-        xhr.onload = function() {
-            if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-                var text = xhr.responseText;
-                var p = document.getElementById('text');
-                p.textContent = text;
-            } else {
-                console.log('Error: ' + xhr.status);
-            }
-              // call the updateText function again after 1 second
-        };
-        xhr.onerror = function() {
-            console.log('Error: ' + xhr.status);
-              // call the updateText function again after 5 seconds in case of error
-        };
-        xhr.send();
-    }
-    
-    setInterval(updateText, 100);  // start the updateText function when the page loads    
-  </script>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -73,7 +50,7 @@
 		<div class="row">
 			<div class="col-md-4 offset-md-4">
 				<div class="card">
-                    <p class="card-text">Uploaded Image:</p>
+                    <p class="card-text">Uploaded Image: </p>
 					<img class="card-img-top" src={{image_path}} alt="Card image cap">
 					<div class="card-body">
                         <p class="card-text">Results:</p>

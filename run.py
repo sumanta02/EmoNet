@@ -100,11 +100,11 @@ def result():
         file = request.files['image']
         if file:
             filename = file.filename
-            file.save(os.path.join("static", os.path.join(app.config['UPLOAD_FOLDER'], filename)))
-            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"))
+            imgPath = os.path.join(app.config['UPLOAD_FOLDER'], "image.jpg")
             emotion = process_image(os.path.join("static", imgPath))
             
-    return render_template('result.html', image_path=url_for("static", filename=imgPath), text=emotion)
+    return render_template('result.html', image_path=os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"), text=emotion)
 
 
 @app.route('/video_feed')
