@@ -76,14 +76,13 @@
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title mb-4">Upload an Image</h5>
-                <form action="{{ url_for('result') }}" method="post" enctype="multipart/form-data">
+                <form action="{{ url_for('video_feed') }}" method="post" enctype="multipart/form-data">
                   <div class="mb-3">
                     <input class="form-control" type="file" name="image" id="formFile" onchange="previewImage()" required>
                   </div>
                   <div class="mb-3">
                     <button type="button" class="btn btn-secondary" id="cancel-btn" disabled onclick="cancelUpload()">Clear</button>
                   </div>
-                
                 <hr>
                 <div>
                   <h6 class="card-subtitle mb-3 text-muted">Uploaded Image:</h6>
@@ -91,6 +90,13 @@
                     <img src="" alt="" id="preview" class="img-fluid d-none">
                     <p class="text-center d-none" id="no-image">No image uploaded yet.</p>
                     <p class="text-center d-none" id="image-name"></p>
+                  </div>
+                  <div class="form-group">
+                    <label for="model">Select a model:</label>
+                    <select class="form-control" name="model">
+                      <option value="model_ft.h5">ResNet</option>
+                      <option value="model_vgg.h5">VGG</option>
+                    </select>
                   </div>
                   <button type="submit" class="btn btn-primary d-none" id="start-btn" disabled>Start</button>
                 </form>

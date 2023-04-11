@@ -4,9 +4,8 @@ import os
 import torch
 from torchvision.transforms import transforms
 emotion = "No Face detected"
+classifier_Model = "model_ft.h5"
 face_classifier = cv2.CascadeClassifier('harrcascade_frontallface_default.xml')
-classifier = torch.load('model_ft.h5',map_location ='cpu')
-classifier.eval()
 
 emotion_labels = ['Angry','Disgust','Fear','Happy','Neutral', 'Sad', 'Surprise']
 
@@ -19,8 +18,9 @@ transform = transforms.Compose([
 
 app = Flask(__name__,  static_folder="static")
 
-def process_image(img_path):
-    print(img_path)
+def process_image(img_path, classifier_name):
+    classifier = torch.load(classifier_name,map_location ='cpu')
+    classifier.eval()
     frame = cv2.imread(img_path)
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     faces = face_classifier.detectMultiScale(gray)
@@ -49,7 +49,9 @@ def process_image(img_path):
     
 
 
-def generate_frames():
+def generate_frames(classifier_Model):
+    classifier = torch.load(classifier_Model,map_location ='cpu')
+    classifier.eval()
     camera = cv2.VideoCapture(0)  # 0 -> index of camera
     while True:
         success, frame = camera.read()
@@ -98,19 +100,28 @@ def image_processing():
 def result():
     if request.method == 'POST':
         file = request.files['image']
+        model = request.form.to_dict()['model']
         if file:
             filename = file.filename
             file.save(os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"))
             imgPath = os.path.join(app.config['UPLOAD_FOLDER'], "image.jpg")
-            emotion = process_image(os.path.join("static", imgPath))
+            emotion = process_image(os.path.join("static", imgPath), model)
             
     return render_template('result.html', image_path=os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"), text=emotion)
 
 
-@app.route('/video_feed')
+@app.route('/video_feed', methods=['GET', 'POST'])
 def video_feed():
-    return Response(generate_frames(),
+    return Response(generate_frames(classifier_Model=classifier_Model),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/change', methods=['GET', 'POST'])
+def change_model():
+    if request.method == "POST":
+        model = request.form.get('model')
+        global classifier_Model
+        classifier_Model = model
+    return render_template('VideoProcessing.html')
 
 @app.route('/text_feed')
 def text_feed():

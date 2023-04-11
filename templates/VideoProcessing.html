@@ -49,7 +49,7 @@
         xhr.send();
     }
     
-    setInterval(updateText, 100);  // start the updateText function when the page loads    
+    setInterval(updateText, 1000);  // start the updateText function when the page loads    
   </script>
   </head>
   <body>
@@ -71,9 +71,20 @@
     </nav>
     <div class="container-fluid">
       <div class="col justify-content-center">
-        <div class="col-md-6 mx-auto py-5">
+        <div class="col-md-6 mx-auto py-1">
           <img src="{{ url_for('video_feed') }}" class="img-fluid w-100">
         </div>
+        <form action="{{ url_for('change_model') }}" method="post" enctype="multipart/form-data">
+        <div>
+          <div class="col-md-6 mx-auto py-1">
+            <label for="model">Select a model:</label>
+            <select class="custom-select" name="model">
+              <option value="model_ft.h5">ResNet</option>
+              <option value="model_vgg.h5">VGG</option>
+            </select>
+          <div class="py-1"><button type="submit" class="btn btn-primary" id="start-btn">Restart</button></div>
+          </div>
+        </form>
         <div class="col-md-6 mx-auto">
           <div class="card">
             <div class="card-body">
