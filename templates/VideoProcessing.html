@@ -49,7 +49,7 @@
         xhr.send();
     }
     
-    setInterval(updateText, 1000);  // start the updateText function when the page loads    
+    setInterval(updateText, 2000);  // start the updateText function when the page loads    
   </script>
   </head>
   <body>
@@ -79,8 +79,13 @@
           <div class="col-md-6 mx-auto py-1">
             <label for="model">Select a model:</label>
             <select class="custom-select" name="model">
-              <option value="model_ft.h5">ResNet</option>
+              {% if context.model=="model_ft.h5" %}
+              <option value="model_ft.h5" selected>ResNet</option>
               <option value="model_vgg.h5">VGG</option>
+              {% else %}
+              <option value="model_ft.h5">ResNet</option>
+              <option value="model_vgg.h5" selected>VGG</option>
+              {% endif %}
             </select>
           <div class="py-1"><button type="submit" class="btn btn-primary" id="start-btn">Restart</button></div>
           </div>
@@ -96,6 +101,7 @@
     </div>
     
 
+    
   </body>
 </html>
 

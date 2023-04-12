@@ -4,6 +4,7 @@ import os
 import torch
 from torchvision.transforms import transforms
 emotion = "No Face detected"
+image_path = ""
 classifier_Model = "model_ft.h5"
 face_classifier = cv2.CascadeClassifier('harrcascade_frontallface_default.xml')
 
@@ -43,6 +44,10 @@ def process_image(img_path, classifier_name):
             emotion = label + " emotion detected. Please Seek Help. Speak with mental health experts."
         elif label in ['Happy','Neutral', 'Surprise']:
             emotion = label + " emotion detected."
+            if classifier_Model == "model_ft.h5":
+                emotion += " Predicted using ResNet Model."
+            else:
+                emotion += " Predicted using VGG Model."
         if label not in emotion_labels:
             emotion = "No Face detected"
     return(emotion)
@@ -52,7 +57,7 @@ def process_image(img_path, classifier_name):
 def generate_frames(classifier_Model):
     classifier = torch.load(classifier_Model,map_location ='cpu')
     classifier.eval()
-    camera = cv2.VideoCapture(0)  # 0 -> index of camera
+    camera = cv2.VideoCapture(2)  # 0 -> index of camera
     while True:
         success, frame = camera.read()
         if not success:
@@ -82,6 +87,8 @@ def generate_frames(classifier_Model):
                     emotion = label + " emotion detected."
                 if label not in emotion_labels:
                     emotion = "No Face detected"
+            else:
+                emotion = "No Face detected"
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
@@ -90,11 +97,11 @@ def generate_frames(classifier_Model):
 
 @app.route('/')
 def index():
-    return render_template('VideoProcessing.html')
+    return render_template('VideoProcessing.html', context=classifier_Model)
 
 @app.route('/image_processing')
 def image_processing():
-    return render_template('imageProcessing.html')
+    return render_template('imageProcessing.html', context={'model': classifier_Model})
 
 @app.route('/result', methods=['GET', 'POST'])
 def result():
@@ -105,23 +112,36 @@ def result():
             filename = file.filename
             file.save(os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"))
             imgPath = os.path.join(app.config['UPLOAD_FOLDER'], "image.jpg")
+            model = request.form.get('model')
+            global classifier_Model, image_path
+            classifier_Model = model
+            image_path = imgPath
             emotion = process_image(os.path.join("static", imgPath), model)
             
-    return render_template('result.html', image_path=os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"), text=emotion)
+    return render_template('result.html', image_path=os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"), text=emotion, model = classifier_Model)
 
+@app.route('/Result', methods=["GET","POST"])
+def process_other_model():
+    global classifier_Model
+    if classifier_Model == "model_ft.h5":
+        classifier_Model = "model_vgg.h5"
+    else:
+        classifier_Model = "model_ft.h5"
+    emotion = process_image(os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"), classifier_Model)
+    return render_template('result.html', image_path=os.path.join("static", app.config['UPLOAD_FOLDER'], "image.jpg"), text=emotion, model = classifier_Model)
 
 @app.route('/video_feed', methods=['GET', 'POST'])
 def video_feed():
     return Response(generate_frames(classifier_Model=classifier_Model),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/change', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def change_model():
     if request.method == "POST":
         model = request.form.get('model')
         global classifier_Model
         classifier_Model = model
-    return render_template('VideoProcessing.html')
+    return render_template('VideoProcessing.html', context={'model': classifier_Model})
 
 @app.route('/text_feed')
 def text_feed():
